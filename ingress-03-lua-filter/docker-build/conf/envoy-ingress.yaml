@@ -1,0 +1,98 @@
+static_resources:
+  listeners:
+  - address:
+      socket_address:
+        address: 0.0.0.0
+        port_value: 8000
+    filter_chains:
+    - filters:
+      - name: envoy.http_connection_manager
+        typed_config:
+          "@type": type.googleapis.com/envoy.config.filter.network.http_connection_manager.v2.HttpConnectionManager
+          stat_prefix: ingress_http
+          codec_type: AUTO
+          route_config:
+            name: ingress_router
+            virtual_hosts:
+            - name: ingress_host
+              domains:
+              - "*"    # IP and domain name are all allowed.
+              # - "bnlapi-ssl.bnlapp.internal:8000"   # IP not allowed. only domain name is allowed.
+              routes:
+              - match:
+                  prefix: "/sb2-rest-http-logger"
+                route:
+                  cluster: sb2-rest-http-logger
+                  retry_policy:
+                    num_retries: 0
+                    per_try_timeout: 10s
+                    retry_on: 5xx
+                  timeout: 30s
+              - match:
+                  prefix: "/direct-response"
+                direct_response:
+                  status: 200
+          http_filters:
+          - name: envoy.health_check
+            typed_config:
+              "@type": type.googleapis.com/envoy.config.filter.http.health_check.v2.HealthCheck
+              pass_through_mode: false
+              cluster_min_healthy_percentages:
+                sb2-rest-http-logger: { value: 100 }
+              headers:
+                - name: ":path"
+                  exact_match: "/sb2-rest-http-logger/actuator/health"
+          - name: envoy.lua
+            typed_config:
+              "@type": type.googleapis.com/envoy.config.filter.http.lua.v2.Lua
+              inline_code: |
+                loadfile("/home/bnlapp/envoy-ingress/conf/pre-processor.lua")()
+          - name: envoy.gzip
+            typed_config:
+              "@type": type.googleapis.com/envoy.config.filter.http.gzip.v2.Gzip
+              memory_level: 5 # keep default value 5
+              content_length: 1024 # trigger compression for msg bigger than 1KB
+              compression_level: DEFAULT
+              compression_strategy: DEFAULT
+              content_type: 
+              - application/javascript
+              - application/xhtml+xml
+              - application/json
+              - text/plain
+              - text/html
+              disable_on_etag_header: false
+              remove_accept_encoding_header: false
+              window_bits: 12 # keep default value 12
+          - name: envoy.lua
+            typed_config:
+              "@type": type.googleapis.com/envoy.config.filter.http.lua.v2.Lua
+              inline_code: |
+                loadfile("/home/bnlapp/envoy-ingress/conf/post-processor.lua")()
+          - name: envoy.router  # this is the default http filter. it must present. Or, the non-matching prefix will no longer respond.
+            typed_config: {}
+          access_log:
+          - name: envoy.file_access_log
+            config:
+              format: '[%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%"
+                %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%
+                "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%" "%REQ(X-BNL-REQUEST-ID)% 
+                - %REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%"
+
+                '
+              path: /dev/stdout
+              # path: "/home/bnlapp/envoy-ingress/logs/http_access.log"
+  clusters:
+  - name: sb2-rest-http-logger
+    connect_timeout: 12.5s
+    type: strict_dns
+    lb_policy: round_robin
+    hosts:
+    - socket_address:
+        address: sb2-rest-http-logger
+        port_value: 8080
+admin:
+  access_log_path: "/home/bnlapp/envoy-ingress/logs/admin_access.log"
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 8001

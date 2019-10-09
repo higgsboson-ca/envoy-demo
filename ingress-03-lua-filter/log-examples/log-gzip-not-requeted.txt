@@ -1,0 +1,71 @@
+[2019-10-09 03:47:17.190][1][debug][main] [source/server/server.cc:170] flushing stats
+[2019-10-09 03:47:22.189][1][debug][main] [source/server/server.cc:170] flushing stats
+[2019-10-09 03:47:27.194][1][debug][main] [source/server/server.cc:170] flushing stats
+[2019-10-09 03:47:32.200][1][debug][main] [source/server/server.cc:170] flushing stats
+[2019-10-09 03:47:37.199][1][debug][main] [source/server/server.cc:170] flushing stats
+[2019-10-09 03:47:42.200][1][debug][main] [source/server/server.cc:170] flushing stats
+[2019-10-09 03:47:47.201][1][debug][main] [source/server/server.cc:170] flushing stats
+[2019-10-09 03:47:52.202][1][debug][main] [source/server/server.cc:170] flushing stats
+[2019-10-09 03:47:57.202][1][debug][main] [source/server/server.cc:170] flushing stats
+[2019-10-09 03:47:57.888][11][debug][main] [source/server/connection_handler_impl.cc:280] [C7] new connection
+[2019-10-09 03:47:57.888][11][debug][http] [source/common/http/conn_manager_impl.cc:246] [C7] new stream
+[2019-10-09 03:47:57.888][11][debug][http] [source/common/http/conn_manager_impl.cc:619] [C7][S5047773158519126451] request headers complete (end_stream=true):
+':authority', 'localhost:8000'
+':path', '/sb2-rest-http-logger/customers/list'
+':method', 'GET'
+'user-agent', 'curl/7.29.0'
+'accept', '*/*'
+'x-bnl-request-id', 'abc000123'
+
+[2019-10-09 03:47:57.888][11][debug][http] [source/common/http/conn_manager_impl.cc:1111] [C7][S5047773158519126451] request end stream
+[2019-10-09 03:47:57.888][11][info][lua] [source/extensions/filters/http/lua/lua_filter.cc:585] script log: ######## LUA pre-processor is here ########
+[2019-10-09 03:47:57.888][11][debug][lua] [source/extensions/filters/common/lua/lua.cc:37] coroutine finished
+[2019-10-09 03:47:57.888][11][debug][router] [source/common/router/router.cc:401] [C7][S5047773158519126451] cluster 'sb2-rest-http-logger' match for URL '/sb2-rest-http-logger/customers/list'
+[2019-10-09 03:47:57.888][11][debug][router] [source/common/router/router.cc:514] [C7][S5047773158519126451] router decoding headers:
+':authority', 'localhost:8000'
+':path', '/sb2-rest-http-logger/customers/list'
+':method', 'GET'
+':scheme', 'http'
+'user-agent', 'curl/7.29.0'
+'accept', '*/*'
+'x-bnl-request-id', 'abc000123'
+'x-forwarded-proto', 'http'
+'x-request-id', '7acb6f55-3426-4385-a31e-7e0ace3048e9'
+'bnlenovy-inject-request-header-me01', 'I-am-coming'
+'x-envoy-expected-rq-timeout-ms', '10000'
+
+[2019-10-09 03:47:57.888][11][debug][pool] [source/common/http/http1/conn_pool.cc:88] creating a new connection
+[2019-10-09 03:47:57.889][11][debug][client] [source/common/http/codec_client.cc:26] [C8] connecting
+[2019-10-09 03:47:57.889][11][debug][connection] [source/common/network/connection_impl.cc:704] [C8] connecting to 172.17.0.3:8080
+[2019-10-09 03:47:57.889][11][debug][connection] [source/common/network/connection_impl.cc:713] [C8] connection in progress
+[2019-10-09 03:47:57.889][11][debug][pool] [source/common/http/conn_pool_base.cc:20] queueing request due to no available connections
+[2019-10-09 03:47:57.889][11][debug][connection] [source/common/network/connection_impl.cc:552] [C8] connected
+[2019-10-09 03:47:57.889][11][debug][client] [source/common/http/codec_client.cc:64] [C8] connected
+[2019-10-09 03:47:57.889][11][debug][pool] [source/common/http/http1/conn_pool.cc:241] [C8] attaching to next request
+[2019-10-09 03:47:57.889][11][debug][router] [source/common/router/router.cc:1503] [C7][S5047773158519126451] pool ready
+2019-10-09T03:47:58,027 INFO  [ -  - ] [http-nio-8080-exec-1, [/sb2-rest-http-logger]] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2019-10-09T03:47:58,027 INFO  [ -  - ] [http-nio-8080-exec-1, DispatcherServlet] - Initializing Servlet 'dispatcherServlet'
+2019-10-09T03:47:58,046 INFO  [ -  - ] [http-nio-8080-exec-1, DispatcherServlet] - Completed initialization in 19 ms
+2019-10-09T03:47:58,184 INFO  [BNL - test-tx-123 - LOCAL-GEN-6c0fc5a9-17d0-47f0-8fed-396cd6747f2d] [http-nio-8080-exec-1, CustomerController] - GET BEGIN
+2019-10-09T03:47:58,184 INFO  [BNL - test-tx-123 - LOCAL-GEN-6c0fc5a9-17d0-47f0-8fed-396cd6747f2d] [http-nio-8080-exec-1, CustomerController] - GET END
+[2019-10-09 03:47:58.380][11][debug][router] [source/common/router/router.cc:994] [C7][S5047773158519126451] upstream headers complete: end_stream=false
+[2019-10-09 03:47:58.380][11][info][lua] [source/extensions/filters/http/lua/lua_filter.cc:585] script log: ######## LUA post-processor is here ########
+[2019-10-09 03:47:58.380][11][debug][lua] [source/extensions/filters/common/lua/lua.cc:37] coroutine finished
+[2019-10-09 03:47:58.380][11][debug][http] [source/common/http/conn_manager_impl.cc:1378] [C7][S5047773158519126451] encoding headers via codec (end_stream=false):
+':status', '200'
+'vary', 'accept-encoding'
+'content-type', 'application/json;charset=UTF-8'
+'date', 'Wed, 09 Oct 2019 03:47:58 GMT'
+'x-envoy-upstream-service-time', '490'
+'bnlenovy-inject-response-header-you01', 'I-am-leaving'
+'server', 'envoy'
+
+[2019-10-09 03:47:58.524][11][debug][client] [source/common/http/codec_client.cc:95] [C8] response complete
+[2019-10-09 03:47:58.524][11][debug][pool] [source/common/http/http1/conn_pool.cc:198] [C8] response complete
+[2019-10-09 03:47:58.524][11][debug][pool] [source/common/http/http1/conn_pool.cc:236] [C8] moving to ready
+[2019-10-09 03:47:58.527][11][debug][connection] [source/common/network/connection_impl.cc:520] [C7] remote close
+[2019-10-09 03:47:58.527][11][debug][connection] [source/common/network/connection_impl.cc:190] [C7] closing socket: 0
+[2019-10-09 03:47:58.527][11][debug][main] [source/server/connection_handler_impl.cc:80] [C7] adding to cleanup list
+2019-10-09T03:47:58,482 INFO  [BNL - test-tx-123 - LOCAL-GEN-6c0fc5a9-17d0-47f0-8fed-396cd6747f2d] [http-nio-8080-exec-1, RequestFilter] - Total Processing Time (ms) : 392
+[2019-10-09T03:47:57.888Z] "GET /sb2-rest-http-logger/customers/list HTTP/1.1" 200 - 0 124930 635 490 "-" "curl/7.29.0" "abc000123 - 7acb6f55-3426-4385-a31e-7e0ace3048e9" "localhost:8000" "172.17.0.3:8080"
+[2019-10-09 03:48:02.202][1][debug][main] [source/server/server.cc:170] flushing stats
