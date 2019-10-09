@@ -1,0 +1,69 @@
+static_resources:
+  listeners:
+  - address:
+      socket_address:
+        address: 0.0.0.0
+        port_value: 8443
+    filter_chains:
+    - filters:
+      - name: envoy.http_connection_manager
+        config:
+          stat_prefix: ingress_http
+          codec_type: AUTO
+          route_config:
+            name: local_route
+            virtual_hosts:
+            - name: httpsbackend
+              domains:
+#              - "*"
+              - "etapp.interac.ca"
+              routes:
+              - match:
+                  prefix: "/mock-domain" # a test for mock-domain
+                route:
+                  cluster: mock-domain
+              - match:
+                  prefix: "/xmlproxy/ws" # for API 3.4.x & 3.5.x
+                route:
+                  cluster: content-router
+              - match:
+                  path: "/xmlproxy/HttpMessageProxy" # for API 1.x
+                route:
+                  cluster: content-router
+              - match:
+                  path: "/xmlproxy/20" #for API 2.x"
+                route:
+                  cluster: content-router
+          http_filters:
+          - name: envoy.router
+            config: {}
+      tls_context:
+        common_tls_context:
+          tls_certificates:
+            - certificate_chain:
+                filename: "/home/bnlapp/envoy-ingress/envoy-ingress/ssl/envoy-ingress-ssl.crt"
+              private_key:
+                filename: "/home/bnlapp/envoy-ingress/envoy-ingress/ssl/envoy-ingress-ssl.key"
+  clusters:
+  - name: mock-domain
+    connect_timeout: 0.25s
+    type: strict_dns
+    lb_policy: round_robin
+    hosts:
+    - socket_address:
+        address: mock-domain
+        port_value: 10080
+  - name: content-router
+    connect_timeout: 0.25s
+    type: strict_dns
+    lb_policy: round_robin
+    hosts:
+    - socket_address:
+        address: content-router
+        port_value: 8181
+admin:
+  access_log_path: "/home/bnlapp/envoy-ingress/envoy-ingress/logs/envoy_access.log"
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 8001

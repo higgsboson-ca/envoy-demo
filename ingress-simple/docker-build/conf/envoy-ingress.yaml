@@ -1,0 +1,51 @@
+static_resources:
+  listeners:
+  - address:
+      socket_address:
+        address: 0.0.0.0
+        port_value: 8000
+    filter_chains:
+    - filters:
+      - name: envoy.http_connection_manager
+        config:
+          stat_prefix: ingress_http
+          codec_type: AUTO
+          route_config:
+            name: local_route
+            virtual_hosts:
+            - name: httpbackend
+              domains:
+              - "*"    # IP and domain name are all allowed.
+              # - "bnlapi-ssl.bnlapp.internal:8000"   # IP not allowed. only domain name is allowed.
+              routes:
+              - match:
+                  prefix: "/sb2-rest-http-logger"
+                route:
+                  cluster: sb2-rest-http-logger
+                  retry_policy:
+                    num_retries: 0
+                    per_try_timeout: 10s
+                    retry_on: 5xx
+                  timeout: 30s
+              - match:
+                  prefix: "/direct-response"
+                direct_response:
+                  status: 200
+          http_filters:
+          - name: envoy.router  # this is the default http filter. it must present. Or, the non-matching prefix will no longer respond.
+            config: {}
+  clusters:
+  - name: sb2-rest-http-logger
+    connect_timeout: 12.5s
+    type: strict_dns
+    lb_policy: round_robin
+    hosts:
+    - socket_address:
+        address: sb2-rest-http-logger
+        port_value: 8080
+admin:
+  access_log_path: "/home/bnlapp/envoy-ingress/logs/envoy_access.log"
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 8001

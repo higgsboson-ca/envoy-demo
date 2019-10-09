@@ -1,0 +1,29 @@
+# ---------------
+# WORKS mtls, soap, content routing
+# ---------------
+curl --cacert /home/etapp/ghe/edge-service-gateway/self-signed-certs/shared-ca/ca/etapp-ca-chain.crt --cert /home/etapp/ghe/edge-service-gateway/self-signed-certs/shared-ca/user/et-client/envoy-client-001.etapp.interac.internal.crt --key /home/etapp/ghe/edge-service-gateway/self-signed-certs/shared-ca/user/et-client/envoy-client-001.etapp.interac.internal.key --resolve etapi-mtls.etapp.internal:8443:127.0.0.1 https://etapi-mtls.etapp.internal:8443/main -v -d @/home/etapp/ghe/edge-service-gateway/performance-test/k6/tls/data/base-soap.xml -H "Content-Type: text/xml" -X POST
+
+# ---------------
+# WORKS no mtls, soap, content routing
+# ---------------
+curl --resolve etapi-mtls.etapp.internal:8000:127.0.0.1 http://etapi-mtls.etapp.internal:8000/main -v -d @/home/etapp/ghe/edge-service-gateway/performance-test/k6/tls/data/base-soap.xml -H "Content-Type: text/xml" -X POST
+
+
+# ---------------
+# WORKS no mtls, json, jwt verification
+# ---------------
+curl --resolve etapi-mtls.etapp.internal:8000:127.0.0.1 http://etapi-mtls.etapp.internal:8000/main -d @/home/etapp/ghe/edge-service-gateway/performance-test/k6/jwt/data/iso_body-min.json -H "Content-Type: application/json" -X POST -v --header "x-et-api-signature: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXlsb2FkLWRpZ2VzdCI6IjBmZWE0MDIxODdlMTA4Mjk4ZTNkZjg4MjliYTk0NzBmMjFmNzg4MjQ5NmUxZjQ1YWJhMDY2MWQxOTZlMjU4MDUifQ.dQ5mhNMl8Ork6fGifEm2NGuMdWexZ2-DFjDw-ATE4e1w3n9Lw5MJu5laEQPMASoj8yP1QQu2qyO6hh4ROYo2AUitp4dcIxDx7-j43Z6C9xQD6tBnlkX0-xxy8-T4fqenmOl2sn7Clq4nDyC-ax_04X-OcdoOe_pMy28TA0Plp7R5X0LgZO-BRIvKJOpex-gH14myL4PwjGlqxykiXGmSERphbRAnSxnwpyh89m-jnsRoHPLHkY3mSJ3Asa6zpyfZwGPoaMMy25X7Ct7fW4PFHD4jxDNER3WagBLjSjd9MSvwxK2AI7AFCcIW38Fjugig6iBgYrCWZKkDCKchcgztVA"
+
+# ---------------
+# WORKS mtls, json, jwt verification
+# ---------------
+curl --cacert /home/etapp/ghe/edge-service-gateway/self-signed-certs/shared-ca/ca/etapp-ca-chain.crt --cert /home/etapp/ghe/edge-service-gateway/self-signed-certs/shared-ca/user/et-client/envoy-client-001.etapp.interac.internal.crt --key /home/etapp/ghe/edge-service-gateway/self-signed-certs/shared-ca/user/et-client/envoy-client-001.etapp.interac.internal.key --resolve etapi-mtls.etapp.internal:8443:127.0.0.1 https://etapi-mtls.etapp.internal:8443/main -d @/home/etapp/ghe/edge-service-gateway/performance-test/k6/jwt/data/iso_body-min.json -H "Content-Type: application/json" -X POST -v --header "x-et-api-signature: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXlsb2FkLWRpZ2VzdCI6IjBmZWE0MDIxODdlMTA4Mjk4ZTNkZjg4MjliYTk0NzBmMjFmNzg4MjQ5NmUxZjQ1YWJhMDY2MWQxOTZlMjU4MDUifQ.dQ5mhNMl8Ork6fGifEm2NGuMdWexZ2-DFjDw-ATE4e1w3n9Lw5MJu5laEQPMASoj8yP1QQu2qyO6hh4ROYo2AUitp4dcIxDx7-j43Z6C9xQD6tBnlkX0-xxy8-T4fqenmOl2sn7Clq4nDyC-ax_04X-OcdoOe_pMy28TA0Plp7R5X0LgZO-BRIvKJOpex-gH14myL4PwjGlqxykiXGmSERphbRAnSxnwpyh89m-jnsRoHPLHkY3mSJ3Asa6zpyfZwGPoaMMy25X7Ct7fW4PFHD4jxDNER3WagBLjSjd9MSvwxK2AI7AFCcIW38Fjugig6iBgYrCWZKkDCKchcgztVA"
+
+
+
+
+
+
+
+
+
