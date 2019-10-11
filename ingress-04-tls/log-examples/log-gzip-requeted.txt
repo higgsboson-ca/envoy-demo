@@ -1,0 +1,69 @@
+[2019-10-09 03:50:17.271][1][debug][main] [source/server/server.cc:170] flushing stats
+[2019-10-09 03:50:22.272][1][debug][main] [source/server/server.cc:170] flushing stats
+[2019-10-09 03:50:23.145][11][debug][http] [source/common/http/conn_manager_impl.cc:246] [C0] new stream
+[2019-10-09 03:50:23.145][11][debug][http] [source/common/http/conn_manager_impl.cc:619] [C0][S16632087551205927421] request headers complete (end_stream=true):
+':authority', 'localhost:9002'
+':path', '/sb2-rest-http-logger/customers/list'
+':method', 'GET'
+'x-bnl-request-id', 'abc-postman-002'
+'accept-encoding', 'gzip'
+'content-type', 'application/json'
+'user-agent', 'PostmanRuntime/7.17.1'
+'accept', '*/*'
+'cache-control', 'no-cache'
+'postman-token', 'c9a0a197-9376-4cff-88c9-87b45fd8119b'
+'connection', 'keep-alive'
+
+[2019-10-09 03:50:23.145][11][debug][http] [source/common/http/conn_manager_impl.cc:1111] [C0][S16632087551205927421] request end stream
+[2019-10-09 03:50:23.145][11][info][lua] [source/extensions/filters/http/lua/lua_filter.cc:585] script log: ######## LUA pre-processor is here ########
+[2019-10-09 03:50:23.145][11][debug][lua] [source/extensions/filters/common/lua/lua.cc:37] coroutine finished
+[2019-10-09 03:50:23.145][11][debug][router] [source/common/router/router.cc:401] [C0][S16632087551205927421] cluster 'sb2-rest-http-logger' match for URL '/sb2-rest-http-logger/customers/list'
+[2019-10-09 03:50:23.145][11][debug][router] [source/common/router/router.cc:514] [C0][S16632087551205927421] router decoding headers:
+':authority', 'localhost:9002'
+':path', '/sb2-rest-http-logger/customers/list'
+':method', 'GET'
+':scheme', 'http'
+'x-bnl-request-id', 'abc-postman-002'
+'accept-encoding', 'gzip'
+'content-type', 'application/json'
+'user-agent', 'PostmanRuntime/7.17.1'
+'accept', '*/*'
+'cache-control', 'no-cache'
+'postman-token', 'c9a0a197-9376-4cff-88c9-87b45fd8119b'
+'x-forwarded-proto', 'http'
+'x-request-id', 'e167c096-580c-4eb3-aeac-f17395d87d77'
+'bnlenovy-inject-request-header-me01', 'I-am-coming'
+'x-envoy-expected-rq-timeout-ms', '10000'
+
+[2019-10-09 03:50:23.145][11][debug][pool] [source/common/http/http1/conn_pool.cc:88] creating a new connection
+[2019-10-09 03:50:23.145][11][debug][client] [source/common/http/codec_client.cc:26] [C9] connecting
+[2019-10-09 03:50:23.145][11][debug][connection] [source/common/network/connection_impl.cc:704] [C9] connecting to 172.17.0.3:8080
+[2019-10-09 03:50:23.146][11][debug][connection] [source/common/network/connection_impl.cc:713] [C9] connection in progress
+[2019-10-09 03:50:23.146][11][debug][pool] [source/common/http/conn_pool_base.cc:20] queueing request due to no available connections
+[2019-10-09 03:50:23.146][11][debug][connection] [source/common/network/connection_impl.cc:552] [C9] connected
+[2019-10-09 03:50:23.146][11][debug][client] [source/common/http/codec_client.cc:64] [C9] connected
+[2019-10-09 03:50:23.146][11][debug][pool] [source/common/http/http1/conn_pool.cc:241] [C9] attaching to next request
+[2019-10-09 03:50:23.146][11][debug][router] [source/common/router/router.cc:1503] [C0][S16632087551205927421] pool ready
+2019-10-09T03:50:23,180 INFO  [BNL - test-tx-123 - LOCAL-GEN-0696b27a-9ebd-4235-b650-53103a1a54ac] [http-nio-8080-exec-2, CustomerController] - GET BEGIN
+2019-10-09T03:50:23,180 INFO  [BNL - test-tx-123 - LOCAL-GEN-0696b27a-9ebd-4235-b650-53103a1a54ac] [http-nio-8080-exec-2, CustomerController] - GET END
+[2019-10-09 03:50:23.235][11][debug][router] [source/common/router/router.cc:994] [C0][S16632087551205927421] upstream headers complete: end_stream=false
+[2019-10-09 03:50:23.235][11][info][lua] [source/extensions/filters/http/lua/lua_filter.cc:585] script log: ######## LUA post-processor is here ########
+[2019-10-09 03:50:23.235][11][debug][lua] [source/extensions/filters/common/lua/lua.cc:37] coroutine finished
+[2019-10-09 03:50:23.235][11][debug][http] [source/common/http/conn_manager_impl.cc:1378] [C0][S16632087551205927421] encoding headers via codec (end_stream=false):
+':status', '200'
+'vary', 'accept-encoding'
+'content-encoding', 'gzip'
+'content-type', 'application/json;charset=UTF-8'
+'date', 'Wed, 09 Oct 2019 03:50:23 GMT'
+'x-envoy-upstream-service-time', '89'
+'bnlenovy-inject-response-header-you01', 'I-am-leaving'
+'server', 'envoy'
+
+[2019-10-09 03:50:23.330][11][debug][client] [source/common/http/codec_client.cc:95] [C9] response complete
+[2019-10-09 03:50:23.330][11][debug][pool] [source/common/http/http1/conn_pool.cc:198] [C9] response complete
+[2019-10-09 03:50:23.330][11][debug][pool] [source/common/http/http1/conn_pool.cc:236] [C9] moving to ready
+2019-10-09T03:50:23,326 INFO  [BNL - test-tx-123 - LOCAL-GEN-0696b27a-9ebd-4235-b650-53103a1a54ac] [http-nio-8080-exec-2, RequestFilter] - Total Processing Time (ms) : 174
+[2019-10-09 03:50:27.272][1][debug][main] [source/server/server.cc:170] flushing stats
+[2019-10-09T03:50:23.145Z] "GET /sb2-rest-http-logger/customers/list HTTP/1.1" 200 - 0 30105 185 89 "-" "PostmanRuntime/7.17.1" "abc-postman-002 - e167c096-580c-4eb3-aeac-f17395d87d77" "localhost:9002" "172.17.0.3:8080"
+[2019-10-09 03:50:32.274][1][debug][main] [source/server/server.cc:170] flushing stats
+[2019-10-09 03:50:37.274][1][debug][main] [source/server/server.cc:170] flushing stats

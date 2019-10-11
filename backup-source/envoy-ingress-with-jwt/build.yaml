@@ -1,0 +1,12 @@
+---
+repositories:
+  images: artifactory.interac.ca:5001/interac-docker-npr
+  config: artifactory.interac.ca:5001/interac-tarball-npr-local
+artifacts:
+  envoy-ingress:
+    image: esg/envoy-ingress
+    config:
+      root: ${project.root}/resources/deploy
+    tags:
+      snapshot: "${snapshot}"
+      latest: "${latest}"

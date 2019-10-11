@@ -1,0 +1,331 @@
+---
+$ref: default.yaml
+$append:
+  route_configs/sidecar_route/virtual_hosts/0/routes:
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000003"}]
+        prefix: "/cs/"
+      route:
+        cluster: inbound-rbc
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000004"}]
+        prefix: "/cs/"
+      route:
+        cluster: inbound-td
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000010"}]
+        prefix: "/cs/"
+      route:
+        cluster: inbound-cibc-bmo
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000001"}]
+        prefix: "/cs/"
+      route:
+        cluster: inbound-cibc-bmo
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000219"}]
+        prefix: "/cs/"
+      route:
+        cluster: inbound-atb-desjardins-nbc
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000815"}]
+        prefix: "/cs/"
+      route:
+        cluster: inbound-atb-desjardins-nbc
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000006"}]
+        prefix: "/cs/"
+      route:
+        cluster: inbound-atb-desjardins-nbc
+    - match:
+        prefix: "/cs/"
+      route:
+        cluster: inbound-etc
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000003"}]
+        prefix: "/registration-service/v1.0"
+      route:
+        cluster: inbound-rbc
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000004"}]
+        prefix: "/registration-service/v1.0"
+      route:
+        cluster: inbound-td
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000010"}]
+        prefix: "/registration-service/v1.0"
+      route:
+        cluster: inbound-cibc-bmo
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000001"}]
+        prefix: "/registration-service/v1.0"
+      route:
+        cluster: inbound-cibc-bmo
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000219"}]
+        prefix: "/registration-service/v1.0"
+      route:
+        cluster: inbound-atb-desjardins-nbc
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000815"}]
+        prefix: "/registration-service/v1.0"
+      route:
+        cluster: inbound-atb-desjardins-nbc
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000006"}]
+        prefix: "/registration-service/v1.0"
+      route:
+        cluster: inbound-atb-desjardins-nbc
+    - match:
+        prefix: "/registration-service/v1.0"
+      route:
+        cluster: inbound-etc
+  route_configs/ingress_route/virtual_hosts/0/routes:
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000003"}]
+        prefix: "/xmlproxy/ws/3.4.1/"
+      route:
+        cluster: inbound-rbc
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000004"}]
+        prefix: "/xmlproxy/ws/3.4.1/"
+      route:
+        cluster: inbound-td
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000010"}]
+        prefix: "/xmlproxy/ws/3.4.1/"
+      route:
+        cluster: inbound-cibc-bmo
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000001"}]
+        prefix: "/xmlproxy/ws/3.4.1/"
+      route:
+        cluster: inbound-cibc-bmo
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000219"}]
+        prefix: "/xmlproxy/ws/3.4.1/"
+      route:
+        cluster: inbound-atb-desjardins-nbc
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000815"}]
+        prefix: "/xmlproxy/ws/3.4.1/"
+      route:
+        cluster: inbound-atb-desjardins-nbc
+    - match:
+        headers: [{ name: "x-et-participant-id", exact_match: "CA000006"}]
+        prefix: "/xmlproxy/ws/3.4.1/"
+      route:
+        cluster: inbound-atb-desjardins-nbc
+    - match:
+        prefix: "/xmlproxy/ws/3.4.1/"
+      route:
+        cluster: inbound-etc
+  health_plans/inbound-rbc:
+    http_health_check:
+      path: /xmlproxy/monitor/healthcheck
+      healthy_percentage: 50
+    circuit_breaker:
+      thresholds:
+        - priority: DEFAULT
+          max_connections: 10000
+          max_requests: 10000
+          max_pending_requests: 10000
+          max_retries: 0
+    route:
+      retry_policy:
+        retry_on: "5xx"
+        num_retries: 0
+        per_try_timeout: 120s
+      timeout: 120s
+  health_plans/inbound-td:
+    http_health_check:
+      path: /xmlproxy/monitor/healthcheck
+      healthy_percentage: 50
+    circuit_breaker:
+      thresholds:
+        - priority: DEFAULT
+          max_connections: 10000
+          max_requests: 10000
+          max_pending_requests: 10000
+          max_retries: 0
+    route:
+      retry_policy:
+        retry_on: "5xx"
+        num_retries: 0
+        per_try_timeout: 120s
+      timeout: 120s
+  health_plans/inbound-cibc-bmo:
+    http_health_check:
+      path: /xmlproxy/monitor/healthcheck
+      healthy_percentage: 50
+    circuit_breaker:
+      thresholds:
+        - priority: DEFAULT
+          max_connections: 10000
+          max_requests: 10000
+          max_pending_requests: 10000
+          max_retries: 0
+    route:
+      retry_policy:
+        retry_on: "5xx"
+        num_retries: 0
+        per_try_timeout: 120s
+      timeout: 120s
+  health_plans/inbound-atb-desjardins-nbc:
+    http_health_check:
+      path: /xmlproxy/monitor/healthcheck
+      healthy_percentage: 50
+    circuit_breaker:
+      thresholds:
+        - priority: DEFAULT
+          max_connections: 10000
+          max_requests: 10000
+          max_pending_requests: 10000
+          max_retries: 0
+    route:
+      retry_policy:
+        retry_on: "5xx"
+        num_retries: 0
+        per_try_timeout: 120s
+      timeout: 120s
+  health_plans/inbound-etc:
+    http_health_check:
+      path: /xmlproxy/monitor/healthcheck
+      healthy_percentage: 50
+    circuit_breaker:
+      thresholds:
+        - priority: DEFAULT
+          max_connections: 10000
+          max_requests: 10000
+          max_pending_requests: 10000
+          max_retries: 0
+    route:
+      retry_policy:
+        retry_on: "5xx"
+        num_retries: 0
+        per_try_timeout: 120s
+      timeout: 120s
+$emplace:
+  listeners/0/http_filters/2/providers:
+    - name: ca000002-validator
+      public_keystore: /keys/public/esg/jwks/ca000002-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000006-validator
+      public_keystore: /keys/public/esg/jwks/ca000006-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: default_signature_validator
+      public_keystore: /keys/public/esg/jwks/common-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+  listeners/0/http_filters/2/matching_rules:
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000002"}]
+        prefix: /
+      provider: ca000002-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000006"}]
+        prefix: /
+      provider: ca000006-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}]
+        prefix: /
+      provider: default_signature_validator
+  listeners/1/http_filters/0/providers:
+    - name: ca000002-validator
+      public_keystore: /keys/public/esg/jwks/ca000002-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000006-validator
+      public_keystore: /keys/public/esg/jwks/ca000006-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: default_signature_validator
+      public_keystore: /keys/public/esg/jwks/common-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+  listeners/1/http_filters/0/matching_rules:
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000002"}]
+        prefix: /
+      provider: ca000002-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000006"}]
+        prefix: /
+      provider: ca000006-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}]
+        prefix: /
+      provider: default_signature_validator
+  clusters/ir-core/tls_sni: etransfer-ir-api.prod.interac.ca
+  clusters/ir-core/hosts:
+    - { address: "10.5.60.33", port: 443 }
+  clusters/notification-registration-service/tls_sni: etransfer-notification-api.prod.interac.ca
+  clusters/notification-registration-service/hosts:
+    - { address: "10.5.60.38", port: 443 }
+  clusters/data-services/tls_sni: etransfer-data-service.prod.interac.ca
+  clusters/data-services/hosts:
+    - { address: "10.5.60.40", port: 443 }
+  clusters/payments-core/tls_sni: etransfer-inbound-payment-api.prod.interac.ca
+  clusters/payments-core/hosts:
+    - { address: "10.5.60.39", port: 443 }
+  clusters/inbound-rbc:
+    type: static
+    localities:
+      - name: primary
+        hosts:
+        - { address: "10.5.101.38", port: 8080 }
+        priority: 0
+      - name: secondary
+        hosts:
+        - { address: "10.5.101.44", port: 8080 }
+        priority: 1
+  clusters/inbound-td:
+    type: static
+    localities:
+      - name: primary
+        hosts:
+        - { address: "10.5.101.39", port: 8080 }
+        priority: 0
+      - name: secondary
+        hosts:
+        - { address: "10.5.101.45", port: 8080 }
+        priority: 1
+  clusters/inbound-cibc-bmo:
+    type: static
+    localities:
+      - name: primary
+        hosts:
+        - { address: "10.5.101.40", port: 8080 }
+        priority: 0
+      - name: secondary
+        hosts:
+        - { address: "10.5.101.47", port: 8080 }
+        priority: 1
+  clusters/inbound-etc:
+    type: static
+    localities:
+      - name: primary
+        hosts:
+        - { address: "10.5.101.41", port: 8080 }
+        priority: 0
+      - name: secondary
+        hosts:
+        - { address: "10.5.101.48", port: 8080 }
+        priority: 1
+  clusters/inbound-atb-desjardins-nbc:
+    type: static
+    localities:
+      - name: primary
+        hosts:
+        - { address: "10.5.101.31", port: 8080 }
+        priority: 0
+      - name: secondary
+        hosts:
+        - { address: "10.5.101.32", port: 8080 }
+        priority: 1
+
+$remove:
+  - clusters/inbound-legacy
+  - health_plans/inbound-legacy

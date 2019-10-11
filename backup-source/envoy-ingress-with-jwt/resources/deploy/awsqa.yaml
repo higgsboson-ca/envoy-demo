@@ -1,0 +1,43 @@
+---
+$ref: default.yaml
+$append:
+  route_configs/sidecar_route/virtual_hosts/0/routes:
+    - match:
+        prefix: "/cs/"
+      route:
+        cluster: inbound-legacy
+    - match:
+        prefix: "/registration-service/v1.0"
+      route:
+        cluster: inbound-legacy
+    - match:
+        prefix: "/1.0v/system-services-api"
+      route:
+        cluster: inbound-legacy
+    - match:
+        prefix: "/payment-service/v1.0"
+      route:
+        cluster: inbound-legacy
+  route_configs/ingress_route/virtual_hosts/0/routes:
+    - match:
+        prefix: "/xmlproxy/ws/3.4.1/"
+      route:
+        cluster: inbound-legacy
+$emplace:
+  clusters/ir-core/hosts:
+    - { address: "172.19.36.122", port: 443 }
+  clusters/notification-registration-service/hosts:
+    - { address: "172.19.36.122", port: 443 }
+  clusters/data-services/hosts:
+    - { address: "172.19.36.122", port: 443 }
+  clusters/payments-core/hosts:
+    - { address: "172.19.36.122", port: 443 }
+  clusters/inbound-legacy/hosts:
+    - { address: "172.19.36.122", port: 443 }
+$remove:
+  - clusters/ir-core/tls-sni
+  - clusters/customer-core/tls-sni
+  - clusters/notification-registration-service/tls-sni
+  - clusters/data-services/tls-sni
+  - clusters/inbound-legacy/tls-sni
+  - clusters/payments-core/tls-sni

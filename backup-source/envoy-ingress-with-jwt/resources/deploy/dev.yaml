@@ -1,0 +1,208 @@
+---
+$ref: default.yaml
+$append:
+  listeners/0/http_filters/0/additional_clusters:
+    - data-services
+  route_configs/sidecar_route/virtual_hosts/0/routes:
+    - match:
+        prefix: "/cs/"
+      route:
+        cluster: inbound-legacy
+    - match:
+        prefix: "/registration-service/v1.0"
+      route:
+        cluster: inbound-legacy
+    - match:
+        prefix: "/1.0v/system-services-api"
+      route:
+        cluster: inbound-legacy
+    - match:
+        prefix: "/payment-service/v1.0"
+      route:
+        cluster: inbound-legacy
+  route_configs/ingress_route/virtual_hosts/0/routes:
+    - match:
+        prefix: "/xmlproxy/ws/3.4.1/"
+      route:
+        cluster: inbound-legacy
+$emplace:
+  listeners/0/http_filters/2/providers:
+    - name: ca000001-validator
+      public_keystore: /keys/public/esg/jwks/ca000001-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000002-validator
+      public_keystore: /keys/public/esg/jwks/ca000002-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000003-validator
+      public_keystore: /keys/public/esg/jwks/ca000003-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000004-validator
+      public_keystore: /keys/public/esg/jwks/ca000004-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000006-validator
+      public_keystore: /keys/public/esg/jwks/ca000006-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000010-validator
+      public_keystore: /keys/public/esg/jwks/ca000010-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000090-validator
+      public_keystore: /keys/public/esg/jwks/ca000090-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000091-validator
+      public_keystore: /keys/public/esg/jwks/ca000091-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000092-validator
+      public_keystore: /keys/public/esg/jwks/ca000092-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: default_signature_validator
+      public_keystore: /keys/public/esg/jwks/common-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+  listeners/0/http_filters/2/matching_rules:
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000001"}]
+        prefix: /
+      provider: ca000001-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000002"}]
+        prefix: /
+      provider: ca000002-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000003"}]
+        prefix: /
+      provider: ca000003-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000004"}]
+        prefix: /
+      provider: ca000004-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000006"}]
+        prefix: /
+      provider: ca000006-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000010"}]
+        prefix: /
+      provider: ca000010-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000090"}]
+        prefix: /
+      provider: ca000090-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000091"}]
+        prefix: /
+      provider: ca000091-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000092"}]
+        prefix: /
+      provider: ca000092-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}]
+        prefix: /
+      provider: default_signature_validator
+  listeners/1/http_filters/0/providers:
+    - name: ca000001-validator
+      public_keystore: /keys/public/esg/jwks/ca000001-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000002-validator
+      public_keystore: /keys/public/esg/jwks/ca000002-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000003-validator
+      public_keystore: /keys/public/esg/jwks/ca000003-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000004-validator
+      public_keystore: /keys/public/esg/jwks/ca000004-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000006-validator
+      public_keystore: /keys/public/esg/jwks/ca000006-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000010-validator
+      public_keystore: /keys/public/esg/jwks/ca000010-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000090-validator
+      public_keystore: /keys/public/esg/jwks/ca000090-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000091-validator
+      public_keystore: /keys/public/esg/jwks/ca000091-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000092-validator
+      public_keystore: /keys/public/esg/jwks/ca000092-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: default_signature_validator
+      public_keystore: /keys/public/esg/jwks/common-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+  listeners/1/http_filters/0/matching_rules:
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000001"}]
+        prefix: /
+      provider: ca000001-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000002"}]
+        prefix: /
+      provider: ca000002-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000003"}]
+        prefix: /
+      provider: ca000003-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000004"}]
+        prefix: /
+      provider: ca000004-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000006"}]
+        prefix: /
+      provider: ca000006-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000010"}]
+        prefix: /
+      provider: ca000010-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000090"}]
+        prefix: /
+      provider: ca000090-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000091"}]
+        prefix: /
+      provider: ca000091-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000092"}]
+        prefix: /
+      provider: ca000092-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}]
+        prefix: /
+      provider: default_signature_validator
+  clusters/ir-core/tls_sni: etransfer-ir-api.dev.interac.ca
+  clusters/ir-core/hosts:
+    - { address: "10.5.66.16", port: 443 }
+  clusters/notification-registration-service/tls_sni: etransfer-notification-api.dev.interac.ca
+  clusters/notification-registration-service/hosts:
+    - { address: "10.5.66.19", port: 443 }
+  clusters/data-services/tls_sni: etransfer-data-service.dev.interac.ca
+  clusters/data-services/hosts:
+    - { address: "10.5.66.24", port: 443 }
+  clusters/payments-core/tls_sni: etransfer-inbound-payment-api.dev.interac.ca
+  clusters/payments-core/hosts:
+    - { address: "10.5.66.20", port: 443 }
+  clusters/inbound-legacy/tls_sni: etransfer-inbound-processing-api.dev.interac.ca
+  clusters/inbound-legacy/hosts:
+    - { address: "10.5.66.12", port: 443 }
+$remove: []

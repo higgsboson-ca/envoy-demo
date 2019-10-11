@@ -1,0 +1,458 @@
+---
+trusted_ca: /etc/ssl/certs/ca-certificates.crt
+
+admin:
+  address: 0.0.0.0
+  port: 8001
+
+listeners:
+- name: vip
+  address: 0.0.0.0
+  port: 8080
+  route_config: ingress_route
+  virtual_host_domains:
+    ingress_host:
+      - "*"
+  http_filters:
+    - name: envoy.health_check
+      path: /healthcheck
+      additional_clusters:
+        - ir-core
+    - name: envoy.lua
+      file: /etransfer/esg/conf/preprocessor.lua
+    - name: envoy.filters.http.jwt_authn
+      providers:
+        - name: default_signature_validator
+          public_keystore: /keys/public/esg/jwks/common-jwks.json
+          in_jwt_header: x-et-api-signature
+          out_payload_header: etint-ingress-jws-digest
+      matching_rules:
+      - rule:
+          headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}]
+          prefix: /
+        provider: default_signature_validator
+    - name: envoy.lua
+      file: /etransfer/esg/conf/content_router.lua
+    - name: envoy.router
+  access_log:
+    path: /dev/stdout
+    format: "[%START_TIME%] \"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%\" %RESPONSE_CODE% %RESPONSE_FLAGS% 
+            %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% \"%REQ(X-FORWARDED-FOR)%\" 
+            \"%REQ(USER-AGENT)%\" \"%REQ(X-ET-PARTICIPANT-ID)% - %REQ(X-ET-REQUEST-ID)% - %REQ(X-REQUEST-ID)%\" 
+            \"%REQ(X-ET-PARTICIPANT-USER-ID)%\" \"%REQ(X-ET-INDIRECT-CONNECTOR-ID)%\" \"%REQ(ETINT-INGRESS-ROUTER)%\" 
+            \"%REQ(:AUTHORITY)%\" \"%UPSTREAM_HOST%\"\n"
+- name: ingress
+  address: 0.0.0.0
+  port: 8443
+  tls:
+    public: /keys/public/esg/etapi-mtls.etapp.internal.crt
+    private: /keys/private/esg/etapi-mtls.etapp.internal.key
+    mutual: true
+  route_config: ingress_route
+  virtual_host_domains:
+    ingress_host:
+      - "etapi-mtls.etapp.internal:8443"
+  http_filters:
+    - name: envoy.filters.http.jwt_authn
+      providers:
+        - name: default_signature_validator
+          public_keystore: /keys/public/esg/etapi-jwks.etapp.internal.json
+          in_jwt_header: x-et-api-signature
+          out_payload_header: etint-ingress-jws-digest
+      matching_rules:
+        - rule:
+            headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}]
+            prefix: /
+          provider: default_signature_validator
+    - name: envoy.lua
+      file: /etransfer/esg/conf/content_router.lua
+    - name: envoy.router
+  access_log:
+    path: /dev/stdout
+    format: "[%START_TIME%] \"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%\" %RESPONSE_CODE% %RESPONSE_FLAGS% 
+            %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% \"%REQ(X-FORWARDED-FOR)%\" 
+            \"%REQ(USER-AGENT)%\" \"%REQ(X-ET-PARTICIPANT-ID)% - %REQ(X-ET-REQUEST-ID)% - %REQ(X-REQUEST-ID)%\" 
+            \"%REQ(X-ET-PARTICIPANT-USER-ID)%\" \"%REQ(X-ET-INDIRECT-CONNECTOR-ID)%\" \"%REQ(ETINT-INGRESS-ROUTER)%\" 
+            \"%REQ(:AUTHORITY)%\" \"%UPSTREAM_HOST%\"\n"
+- name: sidecar
+  address: 0.0.0.0
+  port: 8888
+  route_config: sidecar_route
+  virtual_host_domains:
+    sidecar_host:
+      - "*"
+  http_filters:
+    - name: envoy.router
+  access_log:
+    path: /dev/stdout
+    format: "[%START_TIME%] \"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%\" %RESPONSE_CODE% %RESPONSE_FLAGS% 
+            %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% \"%REQ(X-FORWARDED-FOR)%\" 
+            \"%REQ(USER-AGENT)%\" \"%REQ(X-ET-PARTICIPANT-ID)% - %REQ(X-ET-REQUEST-ID)% - %REQ(X-REQUEST-ID)%\" 
+            \"%REQ(X-ET-PARTICIPANT-USER-ID)%\" \"%REQ(X-ET-INDIRECT-CONNECTOR-ID)%\" \"%REQ(:AUTHORITY)%\" \"%UPSTREAM_HOST%\"\n"
+
+route_configs:
+  sidecar_route:
+    "@type": "envoy.config.v2"
+    virtual_hosts:
+    - name: sidecar_host
+      routes:
+      - match:
+          prefix: "/remittance"
+        route:
+          cluster: ir-core
+      - match:
+          prefix: "/data-service/v1.0"
+        route:
+          cluster: data-services
+      - match:
+          prefix: "/notification-registration-service/v1.0"
+        route:
+          cluster: notification-registration-service
+      - match:
+          headers: [{ name: "x-payment-type", exact_match: "REALTIME_FULFILL_REQUEST_FOR_PAYMENT"}]
+          prefix: "/payment-service/v1.0"
+        route:
+          cluster: payments-core
+      - match:
+          headers: [{ name: "x-payment-type", exact_match: "REALTIME_ACCOUNT_ALIAS_PAYMENT"}]
+          prefix: "/payment-service/v1.0"
+        route:
+          cluster: payments-core
+      - match:
+          headers: [{ name: "x-payment-type", exact_match: "REALTIME_ACCOUNT_DEPOSIT_PAYMENT"}]
+          prefix: "/payment-service/v1.0"
+        route:
+          cluster: payments-core
+  ingress_route:
+    "@type": "envoy.config.v2"
+    virtual_hosts:
+    - name: ingress_host
+      routes:
+      - match:
+          prefix: "/ir-api/v3.5.0/"
+        route:
+          cluster: ir-router
+      - match:
+          prefix: "/customer-api/v3.5.0/"
+        route:
+          cluster: customer-router
+      - match:
+          prefix: "/fraud-api/v3.5.0/"
+        route:
+          cluster: fraud-router
+      - match:
+          prefix: "/request-api/v3.5.0/"
+        route:
+          cluster: request-router
+      - match:
+          prefix: "/system-service-api/v3.5.0/"
+        route:
+          cluster: system-service-router
+      - match:
+          prefix: "/notification-api/v3.5.0/"
+        route:
+          cluster: notification-registration-router
+      - match:
+          prefix: "/registration-api/v3.5.0/"
+        route:
+          cluster: registration-router
+      - match:
+          prefix: "/payment-api/v3.5.0/"
+        route:
+          cluster: payments-router
+      - match:
+          headers: [{ name: "etint-complex-read-transaction", present_match: true }]
+          prefix: "/xmlproxy/ws/3.4.1/manageTransfer"
+        route:
+          cluster: legacy-router
+
+health_plans:
+  "@clusters":
+    health_checks:
+      timeout: 2s
+      interval: 10s
+      interval_jitter: 1s
+      healthy_threshold: 1
+      unhealthy_threshold: 2
+      unhealthy_interval: 10s
+      no_traffic_interval: 30s
+      event_log_path: /dev/stdout
+      always_log_health_check_failures: true
+  ir-router:
+    http_health_check:
+      path: /ir-api/v3.5.0/health
+      healthy_percentage: 100
+    circuit_breaker:
+      thresholds:
+        - priority: DEFAULT
+          max_connections: 10000
+          max_requests: 10000
+          max_pending_requests: 10000
+          max_retries: 0
+          # max_connection_pools: 8000
+    route:
+      # priority: HIGH
+      retry_policy:
+        retry_on: "5xx"
+        num_retries: 0
+        per_try_timeout: 120s
+      timeout: 120s
+      # idle_timeout: 10s
+  ir-core:
+    tcp_health_check:
+      healthy_percentage: 100
+    circuit_breaker:
+      thresholds:
+        - priority: DEFAULT
+          max_connections: 10000
+          max_requests: 10000
+          max_pending_requests: 10000
+          max_retries: 0
+    route:
+      retry_policy:
+        retry_on: "5xx"
+        num_retries: 0
+        per_try_timeout: 120s
+      timeout: 120s
+  customer-router:
+    http_health_check:
+      path: /customer-api/v3.5.0/health
+      healthy_percentage: 100
+    circuit_breaker:
+      thresholds:
+        - priority: DEFAULT
+          max_connections: 10000
+          max_requests: 10000
+          max_pending_requests: 10000
+          max_retries: 0
+    route:
+      retry_policy:
+        retry_on: "5xx"
+        num_retries: 0
+        per_try_timeout: 120s
+      timeout: 120s
+  fraud-router:
+    http_health_check:
+      path: /fraud-api/v3.5.0/health
+      healthy_percentage: 100
+    circuit_breaker:
+      thresholds:
+        - priority: DEFAULT
+          max_connections: 10000
+          max_requests: 10000
+          max_pending_requests: 10000
+          max_retries: 0
+    route:
+      retry_policy:
+        retry_on: "5xx"
+        num_retries: 0
+        per_try_timeout: 120s
+      timeout: 120s
+  # fraud-core:
+  #   tcp_health_check:
+  #     healthy_percentage: 100
+  #   circuit_breaker:
+  #     thresholds:
+  #       - priority: DEFAULT
+  #         max_connections: 10000
+  #         max_requests: 10000
+  #         max_pending_requests: 10000
+  #         max_retries: 0
+  #   route:
+  #     retry_policy:
+  #       retry_on: "5xx"
+  #       num_retries: 0
+  #       per_try_timeout: 120s
+  #     timeout: 120s
+  legacy-router:
+    http_health_check:
+      path: /legacy-api/v3.4.1/health
+      healthy_percentage: 100
+    circuit_breaker:
+      thresholds:
+        - priority: DEFAULT
+          max_connections: 10000
+          max_requests: 10000
+          max_pending_requests: 10000
+          max_retries: 0
+    route:
+      retry_policy:
+        retry_on: "5xx"
+        num_retries: 0
+        per_try_timeout: 120s
+      timeout: 120s
+  data-services:
+    tcp_health_check:
+      healthy_percentage: 100
+    circuit_breaker:
+      thresholds:
+        - priority: DEFAULT
+          max_connections: 10000
+          max_requests: 10000
+          max_pending_requests: 10000
+          max_retries: 0
+    route:
+      retry_policy:
+        retry_on: "5xx"
+        num_retries: 0
+        per_try_timeout: 120s
+      timeout: 120s
+  inbound-legacy:
+    tcp_health_check:
+      healthy_percentage: 100
+    circuit_breaker:
+      thresholds:
+        - priority: DEFAULT
+          max_connections: 10000
+          max_requests: 10000
+          max_pending_requests: 10000
+          max_retries: 0
+    route:
+      retry_policy:
+        retry_on: "5xx"
+        num_retries: 0
+        per_try_timeout: 120s
+      timeout: 120s
+  request-router:
+    http_health_check:
+      path: /request-api/v3.5.0/health
+      healthy_percentage: 100
+    circuit_breaker:
+      thresholds:
+        - priority: DEFAULT
+          max_connections: 10000
+          max_requests: 10000
+          max_pending_requests: 10000
+          max_retries: 0
+    route:
+      retry_policy:
+        retry_on: "5xx"
+        num_retries: 0
+        per_try_timeout: 120s
+      timeout: 120s
+  system-service-router:
+    http_health_check:
+      path: /system-service-api/v3.5.0/health
+      healthy_percentage: 100
+    circuit_breaker:
+      thresholds:
+        - priority: DEFAULT
+          max_connections: 10000
+          max_requests: 10000
+          max_pending_requests: 10000
+          max_retries: 0
+    route:
+      retry_policy:
+        retry_on: "5xx"
+        num_retries: 0
+        per_try_timeout: 120s
+      timeout: 120s
+  notification-registration-router:
+    http_health_check:
+      path: /notification-api/v3.5.0/health
+      healthy_percentage: 100
+    circuit_breaker:
+      thresholds:
+        - priority: DEFAULT
+          max_connections: 10000
+          max_requests: 10000
+          max_pending_requests: 10000
+          max_retries: 0
+    route:
+      retry_policy:
+        retry_on: "5xx"
+        num_retries: 0
+        per_try_timeout: 120s
+      timeout: 120s
+  registration-router:
+    http_health_check:
+      path: /registration-api/v3.5.0/health
+      healthy_percentage: 100
+    circuit_breaker:
+      thresholds:
+        - priority: DEFAULT
+          max_connections: 10000
+          max_requests: 10000
+          max_pending_requests: 10000
+          max_retries: 0
+    route:
+      retry_policy:
+        retry_on: "5xx"
+        num_retries: 0
+        per_try_timeout: 120s
+      timeout: 120s
+  payments-router:
+    http_health_check:
+      path: /payment-api/v3.5.0/health
+      healthy_percentage: 100
+    circuit_breaker:
+      thresholds:
+        - priority: DEFAULT
+          max_connections: 10000
+          max_requests: 10000
+          max_pending_requests: 10000
+          max_retries: 0
+    route:
+      retry_policy:
+        retry_on: "5xx"
+        num_retries: 0
+        per_try_timeout: 120s
+      timeout: 120s
+
+clusters:
+  ir-router:
+    type: strict_dns
+    hosts:
+    - { address: "ir-router", port: 8080 }
+  ir-core:
+    type: static
+    hosts: []
+  customer-router:
+    type: strict_dns
+    hosts:
+    - { address: "customer-router", port: 8080 }
+  fraud-router:
+    type: strict_dns
+    hosts:
+    - { address: "fraud-router", port: 8080 }
+  # fraud-core:
+  #   type: static
+  #   tls_sni: fraud-detection-api.dev.interac.ca
+  #   hosts:
+  #   - { address: "10.5.66.68", port: 443 }
+  request-router:
+    type: strict_dns
+    hosts:
+    - { address: "request-router", port: 8080 }
+  system-service-router:
+    type: strict_dns
+    hosts:
+    - { address: "system-service-router", port: 8080 }
+  notification-registration-router:
+    type: strict_dns
+    hosts:
+    - { address: "notification-registration-router", port: 8080 }
+  notification-registration-service:
+    type: static
+    hosts: []
+  registration-router:
+    type: strict_dns
+    hosts:
+    - { address: "registration-router", port: 8080 }
+  payments-router:
+    type: strict_dns
+    hosts:
+    - { address: "payments-router", port: 8080 }
+  payments-core:
+    type: static
+    hosts: []
+  legacy-router:
+    type: strict_dns
+    hosts:
+    - { address: "legacy-router", port: 8080 }
+  data-services:
+    type: static
+    hosts: []
+  inbound-legacy:
+    type: static
+    hosts: []

@@ -1,0 +1,208 @@
+{%- macro cluster_h1(name, cluster, health_plan=None, timeout='0.25s') -%}
+name: {{ name }}
+connect_timeout: {{ timeout }}
+type: {{ cluster.type }}
+lb_policy: round_robin
+load_assignment:
+  cluster_name: {{ name }}
+  endpoints:
+    {%- if cluster.localities %}
+    {%- for locality in cluster.localities %}
+    - locality:
+        region: {{ locality.name }}
+      priority: {{ locality.priority }}
+      lb_endpoints:
+      {%- for host in locality.hosts %}
+      - endpoint:
+          address:
+            socket_address:
+              address: {{ host.address }}
+              port_value: {{ host.port }}
+      {%- endfor %}
+    {%- endfor %}
+    {%- elif cluster.hosts %}
+    - lb_endpoints:
+      {%- for host in cluster.hosts %}
+        - endpoint:
+            address:
+              socket_address:
+                address: {{ host.address }}
+                port_value: {{ host.port }}
+      {%- endfor %}
+    {%- endif %}
+{%- if health_plan and (health_plan.http_health_check or health_plan.tcp_health_check) %}
+health_checks:
+  {%- if health_plan.http_health_check %}
+  - http_health_check:
+      path: {{ health_plan.http_health_check.path }}
+    {%- if envoy.health_plans['@clusters'] and envoy.health_plans['@clusters'].health_checks %}
+    {{ to_yaml(envoy.health_plans['@clusters'].health_checks)|indent(4) }}
+    {%- endif %}
+  {%- elif health_plan.tcp_health_check %}
+  - tcp_health_check: {}
+    {%- if envoy.health_plans['@clusters'] and envoy.health_plans['@clusters'].health_checks %}
+    {{ to_yaml(envoy.health_plans['@clusters'].health_checks)|indent(4) }}
+    {%- endif %}
+  {%- endif %}
+{%- endif %}
+drain_connections_on_host_removal: true
+{%- if health_plan and health_plan.circuit_breaker %}
+circuit_breakers:
+  {{ to_yaml(health_plan.circuit_breaker)|indent(2) }}
+{%- endif %}
+{%- if cluster.tls_sni %}
+tls_context:
+  common_tls_context:
+    validation_context:
+      trusted_ca: 
+        filename: "{{ envoy.trusted_ca }}"
+  sni: {{ cluster.tls_sni }}
+{%- endif %}
+{%- endmacro -%}
+
+{%- macro filter_health_check(config, route_config) -%}
+name: envoy.health_check
+typed_config:
+  "@type": type.googleapis.com/envoy.config.filter.http.health_check.v2.HealthCheck
+  pass_through_mode: false
+  cluster_min_healthy_percentages:
+    {%- for vh in route_config.virtual_hosts %}
+    {%-   for r in vh.routes %}
+    {%-     if r.route.cluster and envoy.health_plans[r.route.cluster] and envoy.health_plans[r.route.cluster].http_health_check %}
+    {{ r.route.cluster }}: { value: {{ envoy.health_plans[r.route.cluster].http_health_check.healthy_percentage }} }
+    {%-     endif %}
+    {%-   endfor %}
+    {%- endfor %}
+    {%- if config.additional_clusters %}
+    {%-   for c in config.additional_clusters %}
+    {%-     if envoy.health_plans[c].http_health_check %}
+    {{ c }}: { value: {{ envoy.health_plans[c].http_health_check.healthy_percentage }} }
+    {%-     elif envoy.health_plans[c].tcp_health_check %}
+    {{ c }}: { value: {{ envoy.health_plans[c].tcp_health_check.healthy_percentage }} }
+    {%-     endif %}
+    {%-   endfor %}
+    {%- endif %}
+  headers:
+    - name: ":path"
+      exact_match: "{{ config.path }}"
+{%- endmacro -%}
+
+{%- macro filter_jwt_authn(config) -%}
+name: envoy.filters.http.jwt_authn
+config:
+  providers:
+    {%- for provider in config.providers %}
+    {{ provider.name }}:
+      local_jwks:
+        filename: "{{ provider.public_keystore }}"
+      from_headers:
+        - name: {{ provider.in_jwt_header }}
+      forward: true
+      forward_payload_header: "{{ provider.out_payload_header }}"
+    {%- endfor %}
+  rules:
+    {%- for match in config.matching_rules %}
+    - match:
+        {{ to_yaml(match.rule)|indent(8) }}
+      requires:
+        provider_name: {{ match.provider }}
+    {%- endfor %}
+{%- endmacro -%}
+
+{%- macro filter_lua(config) -%}
+name: envoy.lua
+config:
+  inline_code: |
+    loadfile("{{ config.file }}")()
+{%- endmacro -%}
+
+{%- macro filter_router(config) -%}
+name: envoy.router
+config: {}
+{%- endmacro -%}
+
+{%- macro listener(data, route_config) -%}
+address:
+  socket_address:
+    address: {{ data.address }}
+    port_value: {{ data.port }}
+filter_chains:
+- filters:
+  - name: envoy.http_connection_manager
+    typed_config:
+      "@type": type.googleapis.com/envoy.config.filter.network.http_connection_manager.v2.HttpConnectionManager
+      stat_prefix: {{ data.name }}_http
+      codec_type: auto
+      route_config:
+        name: {{ data.name }}_router
+        virtual_hosts:
+        {%- for v in route_config.virtual_hosts %}
+          - name: {{ v.name }}
+            domains:
+            {%- for d in data.virtual_host_domains[v.name] %}
+            - "{{ d|indent(14) }}"
+            {%- endfor %}
+            {{ to_yaml(add_route_circuit_breakers(remove_keys(v, ['name', 'domains']), envoy.health_plans))|indent(12) }}
+        {%- endfor %}
+      http_filters:
+      {%- for filter in data.http_filters %}
+        {%- if filter.name == 'envoy.health_check' %}
+        - {{ filter_health_check(filter, route_config)|indent(10) }}
+        {%- elif filter.name == 'envoy.filters.http.jwt_authn' %}
+        - {{ filter_jwt_authn(filter)|indent(10) }}
+        {%- elif filter.name == 'envoy.lua' %}
+        - {{ filter_lua(filter)|indent(10) }}
+        {%- elif filter.name == 'envoy.router' %}
+        - {{ filter_router(filter)|indent(10) }}
+        {%- endif %}
+      {%- endfor %}
+      {%- if data.access_log %}
+      access_log:
+        - name: envoy.file_access_log
+          config:
+            {{ to_yaml(data.access_log)|indent(12) }}
+      {%- endif %}
+      {%- if data.tls %}
+      forward_client_cert_details: APPEND_FORWARD
+      set_current_client_cert_details:
+        subject: true
+      {%- endif %}
+  {%- if data.tls %}
+  tls_context:
+    common_tls_context:
+      tls_certificates:
+        - certificate_chain:
+            filename: "{{ data.tls.public }}"
+          private_key:
+            filename: "{{ data.tls.private }}"
+      validation_context:
+        trusted_ca:
+          filename: "{{ envoy.trusted_ca }}"
+        # verify_certificate_spki:
+        #   - "<base64-encoded-publickey-hash>"
+    {%- if data.tls.mutual == True %}
+    require_client_certificate: true
+    {%- endif %}
+  {%- endif %}
+{%- endmacro -%}
+# =====================================================
+# envoy-ingress {{ env_name }} configuration
+# =====================================================
+static_resources:
+  listeners:
+  {%- for item in envoy.listeners %}
+    - {{ listener(item, envoy.route_configs[item.route_config])|indent(6) }}
+  {%- endfor %}
+  clusters:
+    {%- for id, cluster in envoy.clusters.items() %}
+    - {{ cluster_h1(id, cluster, envoy.health_plans[id])|indent(6) }}
+    {%- endfor %}
+cluster_manager:
+  outlier_detection:
+    event_log_path: /dev/stdout
+admin:
+  access_log_path: /dev/stdout
+  address:
+    socket_address:
+      address: {{ envoy.admin.address }}
+      port_value: {{ envoy.admin.port }}

@@ -1,0 +1,11 @@
+# send directly to 8181 port -- gzip
+curl -H "x-bnl-request-id: abc-012-234" -H "Accept-Encoding: gzip" http://localhost:8181/sb2-rest-http-logger/customers/list?param1=aaa&param2=bbb&param3=ccc
+
+# send directly to 8181 port -- no gzip
+curl -H "x-bnl-request-id: abc-012-234" http://localhost:8181/sb2-rest-http-logger/customers/list?param1=aaa&param2=bbb&param3=ccc
+
+#send to Envoy 8000 port -- gzip
+curl -H "x-bnl-request-id: abc-012-234" -H "Accept-Encoding: gzip" http://localhost:8000/sb2-rest-http-logger/customers/list
+
+#send to Envoy 8000 port -- no gzip
+curl -H "x-bnl-request-id: abc-012-234" http://localhost:8000/sb2-rest-http-logger/customers/list

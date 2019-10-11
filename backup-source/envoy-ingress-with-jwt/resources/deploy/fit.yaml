@@ -1,0 +1,94 @@
+---
+$ref: default.yaml
+$append:
+  route_configs/sidecar_route/virtual_hosts/0/routes:
+    - match:
+        prefix: "/cs/"
+      route:
+        cluster: inbound-legacy
+    - match:
+        prefix: "/registration-service/v1.0"
+      route:
+        cluster: inbound-legacy
+    - match:
+        prefix: "/1.0v/system-services-api"
+      route:
+        cluster: inbound-legacy
+    - match:
+        prefix: "/payment-service/v1.0"
+      route:
+        cluster: inbound-legacy
+  route_configs/ingress_route/virtual_hosts/0/routes:
+    - match:
+        prefix: "/xmlproxy/ws/3.4.1/"
+      route:
+        cluster: inbound-legacy
+$emplace:
+  listeners/0/http_filters/2/providers:
+    - name: ca000002-validator
+      public_keystore: /keys/public/esg/jwks/ca000002-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000006-validator
+      public_keystore: /keys/public/esg/jwks/ca000006-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: default_signature_validator
+      public_keystore: /keys/public/esg/jwks/common-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+  listeners/0/http_filters/2/matching_rules:
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000002"}]
+        prefix: /
+      provider: ca000002-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000006"}]
+        prefix: /
+      provider: ca000006-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}]
+        prefix: /
+      provider: default_signature_validator
+  listeners/1/http_filters/0/providers:
+    - name: ca000002-validator
+      public_keystore: /keys/public/esg/jwks/ca000002-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: ca000006-validator
+      public_keystore: /keys/public/esg/jwks/ca000006-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+    - name: default_signature_validator
+      public_keystore: /keys/public/esg/jwks/common-jwks.json
+      in_jwt_header: x-et-api-signature
+      out_payload_header: etint-ingress-jws-digest
+  listeners/1/http_filters/0/matching_rules:
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000002"}]
+        prefix: /
+      provider: ca000002-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}, { name: "x-et-participant-id", exact_match: "CA000006"}]
+        prefix: /
+      provider: ca000006-validator
+    - rule:
+        headers: [{ name: "x-et-api-signature-type", exact_match: "PAYLOAD_DIGEST_SHA256"}]
+        prefix: /
+      provider: default_signature_validator
+  clusters/ir-core/tls_sni: etransfer-ir-api.fit.interac.ca
+  clusters/ir-core/hosts:
+    - { address: "10.5.62.32", port: 443 }
+  clusters/notification-registration-service/tls_sni: etransfer-notification-api.fit.interac.ca
+  clusters/notification-registration-service/hosts:
+    - { address: "10.5.62.37", port: 443 }
+  clusters/data-services/tls_sni: etransfer-data-service.fit.interac.ca
+  clusters/data-services/hosts:
+    - { address: "10.5.62.39", port: 443 }
+  clusters/payments-core/tls_sni: etransfer-inbound-payment-api.fit.interac.ca
+  clusters/payments-core/hosts:
+    - { address: "10.5.62.38", port: 443 }
+  clusters/inbound-legacy/tls_sni: etransfer-inbound-processing-api.fit.interac.ca
+  clusters/inbound-legacy/hosts:
+    - { address: "10.5.62.30", port: 443 }
+$remove: []
