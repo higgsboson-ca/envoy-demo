@@ -9,3 +9,28 @@ curl -H "x-bnl-request-id: abc-012-234" -H "Accept-Encoding: gzip" http://localh
 
 #send to Envoy 8000 port -- no gzip
 curl -H "x-bnl-request-id: abc-012-234" http://localhost:8000/sb2-rest-http-logger/customers/list
+
+
+# resolve the HTTPS host name
+curl --verbose --resolve bnlhost01.devqa.bnlorg999.internal:8443:127.0.0.1 https://bnlhost01.devqa.bnlorg999.internal:8443
+curl --verbose --resolve bnlhost01.devqa.bnlorg999.internal:8443:188.188.18.5 https://bnlhost01.devqa.bnlorg999.internal:8443
+
+# Mutual TLS handshake test
+curl -v --cert ./bnlorg001.tls.devqa.crt --key ./bnlorg001.tls.devqa.key -H "x-bnl-request-id: abc-012-234" --resolve bnlhost01.devqa.bnlorg999.internal:8443:127.0.0.1 https://bnlhost01.devqa.bnlorg999.internal:8443/sb2-rest-http-logger/customers/list
+
+# Mutual TLS test no gzip
+curl -v --cert ./bnlorg001.tls.devqa.crt --key ./bnlorg001.tls.devqa.key -H "x-bnl-request-id: abc-012-234" --resolve bnlhost01.devqa.bnlorg999.internal:8443:127.0.0.1 https://bnlhost01.devqa.bnlorg999.internal:8443/sb2-rest-http-logger/customers/list
+
+# Mutual TLS test plus gzip
+curl -v --cert ./bnlorg001.tls.devqa.crt --key ./bnlorg001.tls.devqa.key -H "x-bnl-request-id: abc-012-234" -H "Accept-Encoding: gzip" --resolve bnlhost01.devqa.bnlorg999.internal:8443:127.0.0.1 https://bnlhost01.devqa.bnlorg999.internal:8443/sb2-rest-http-logger/customers/list
+
+# one-way TLS no gzip
+curl -v -H "x-bnl-request-id: abc-012-234" --resolve bnlhost01.devqa.bnlorg999.internal:8443:127.0.0.1 https://bnlhost01.devqa.bnlorg999.internal:8443/sb2-rest-http-logger/customers/list
+
+curl -v -H "x-bnl-request-id: abc-012-234" --resolve bnlhost01.devqa.bnlorg999.internal:8443:127.0.0.1 https://bnlhost01.devqa.bnlorg999.internal:8000/sb2-rest-http-logger/customers/list
+
+# one-way TLS plus gzip
+curl -v -H "x-bnl-request-id: abc-012-234" -H "Accept-Encoding: gzip" --resolve bnlhost01.devqa.bnlorg999.internal:8443:127.0.0.1 https://bnlhost01.devqa.bnlorg999.internal:8443/sb2-rest-http-logger/customers/list
+
+#check remote certificate
+openssl s_client -connect bnlhost01.devqa.bnlorg001.internal:8443

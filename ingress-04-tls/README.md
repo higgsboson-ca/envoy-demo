@@ -26,3 +26,7 @@ The Ingress Proxy consists of the following features:
   1. if client request does not ask for gzip, Vary header will not present and clear text will be served by Envoy
   2. if client request DO ask for gzip, Vary header will present and zipped content will be served by Envoy. the client will do decompresion by its own.
   3. the response from back end to Envoy will always present the Vary header
+
+---------------
+## TLS
+- SPKI is prefered vs hash. As long as the CA cert is not rotated, the spki hash value no need to update even if the cert is rotated.

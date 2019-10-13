@@ -12,9 +12,9 @@ RUN usermod -a -G root,bin,daemon,sys bnlapp
 
 # have to create the folder and pur the config file under. Or, the volume will not be accessible by container.
 RUN mkdir /home/bnlapp/envoy-ingress &&\
-	mkdir /home/bnlapp/envoy-ingress/conf &&\
-	mkdir /home/bnlapp/envoy-ingress/ssl &&\
-	mkdir /home/bnlapp/envoy-ingress/logs
+    mkdir /home/bnlapp/envoy-ingress/conf &&\
+    mkdir /home/bnlapp/envoy-ingress/tls &&\
+    mkdir /home/bnlapp/envoy-ingress/logs
 
 # config will be mounted from host
 #ADD conf/envoy-ingress.yaml /home/bnlapp/envoy-ingress/conf/envoy-ingress.yaml
@@ -24,9 +24,9 @@ RUN mkdir /home/bnlapp/envoy-ingress &&\
 ADD ca-certs/*.crt /usr/local/share/ca-certificates/
 RUN update-ca-certificates
 
-# Add SSL keys ---- mount the certs from the volume
-# ADD envoy-ingress-ssl.crt /home/bnlapp/envoy-ingress/ssl/envoy-ingress-ssl.crt
-# ADD envoy-ingress-ssl.key /home/bnlapp/envoy-ingress/ssl/envoy-ingress-ssl.key
+# Add tls keys ---- mount the certs from the volume
+# ADD server-certs/bnlorg999.tls.devqa.crt /home/bnlapp/envoy-ingress/tls/bnlorg999.tls.devqa.crt
+# ADD server-certs/bnlorg999.tls.devqa.key /home/bnlapp/envoy-ingress/tls/bnlorg999.tls.devqa.key
 
 RUN chown -R bnlapp:bnlapp /home/bnlapp
 
